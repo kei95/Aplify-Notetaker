@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { API, graphqlOperation } from "aws-amplify";
+import { API, graphqlOperation, Auth } from "aws-amplify";
 import { withAuthenticator } from "aws-amplify-react";
 
 import { createNote, deleteNote, updateNote } from "./graphql/mutations";
@@ -14,61 +14,59 @@ function App() {
   const [notes, setNotes] = useState([]);
   const [note, setNote] = useState("");
   const [selectedId, setSelectedId] = useState("");
-  const [isInitialFetchDone, setIsInitialFetchDone] = useState(false);
-
   useEffect(() => {
     async function getNotes() {
-      if (!isInitialFetchDone) {
-        const fetchedNotes = await API.graphql(graphqlOperation(listNotes));
-        console.log(fetchedNotes);
-        setNotes(
-          fetchedNotes.data.listNotes.items.sort(
-            (noteA, noteB) =>
-              new Date(noteB.createdAt) - new Date(noteA.createdAt)
-          )
-        );
-        setIsInitialFetchDone(true);
-      }
+      const fetchedNotes = await API.graphql(graphqlOperation(listNotes));
+      setNotes(
+        fetchedNotes.data.listNotes.items.sort(
+          (noteA, noteB) =>
+            new Date(noteB.createdAt) - new Date(noteA.createdAt)
+        )
+      );
     }
 
     const createNoteListener = API.graphql(
-      graphqlOperation(onCreateNote)
+      graphqlOperation(onCreateNote, { owner: Auth.user.username })
     ).subscribe({
       next: (noteData) => {
         const newNote = noteData.value.data.onCreateNote;
-        const prevNotes = notes.filter((note) => note.id !== newNote.id);
-        const updatedNotes = [newNote, ...prevNotes];
-        setNotes(updatedNotes);
-        getNotes();
+        setNotes((prevNotes) => {
+          const updatedNotes = [newNote, ...prevNotes];
+          return updatedNotes;
+        });
       },
     });
 
     const deleteListener = API.graphql(
-      graphqlOperation(onDeleteNote)
+      graphqlOperation(onDeleteNote, { owner: Auth.user.username })
     ).subscribe({
       next: (noteData) => {
-        getNotes();
         const deletedNote = noteData.value.data.onDeleteNote;
-        const updatedNotes = notes.filter((note) => note.id !== deletedNote.id);
-        setNotes(updatedNotes);
-        getNotes();
+        setNotes((prevNotes) => {
+          const updatedNotes = prevNotes.filter(
+            (note) => note.id !== deletedNote.id
+          );
+          return updatedNotes;
+        });
       },
     });
 
     const updateListener = API.graphql(
-      graphqlOperation(onUpdateNote)
+      graphqlOperation(onUpdateNote, { owner: Auth.user.username })
     ).subscribe({
       next: (noteDate) => {
-        getNotes();
         const updatedNote = noteDate.value.data.onUpdateNote;
-        const index = notes.findIndex((note) => note.id === updatedNote.id);
-        const updatedNotes = [
-          ...notes.slice(0, index),
-          updatedNote,
-          ...notes.slice(index + 1),
-        ];
-        setNotes(updatedNotes);
-        getNotes();
+        setNotes((prevNotes) => {
+          const index = prevNotes.findIndex(
+            (note) => note.id === updatedNote.id
+          );
+          const updatedNotes = [
+            ...prevNotes.slice(0, index),
+            updatedNote,
+            ...prevNotes.slice(index + 1),
+          ];
+          return updatedNotes;
+        });
       },
     });
 
@@ -78,16 +76,18 @@ function App() {
       deleteListener.unsubscribe();
       updateListener.unsubscribe();
     };
-  }, [isInitialFetchDone, notes]);
+  }, []);
 
   const handleAddNote = async (e) => {
     e.preventDefault();
-    if (hasExistingNote()) {
-      handleUpdateNote();
-      return;
+    if (note.length > 0) {
+      if (hasExistingNote()) {
+        handleUpdateNote();
+        return;
+      }
+      await API.graphql(graphqlOperation(createNote, { input: { note } }));
+      setNote("");
     }
-    await API.graphql(graphqlOperation(createNote, { input: { note } }));
-    setNote("");
   };
 
   const handleUpdateNote = async () => {
