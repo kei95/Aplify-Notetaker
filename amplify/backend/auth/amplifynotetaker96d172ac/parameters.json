@@ -1,6 +1,4 @@
 {
-    "identityPoolName": "amplifynotetaker96d172ac_identitypool_96d172ac",
-    "allowUnauthenticatedIdentities": false,
     "resourceNameTruncated": "amplif96d172ac",
     "userPoolName": "amplifynotetaker96d172ac_userpool_96d172ac",
     "autoVerifiedAttributes": [
@@ -21,18 +19,20 @@
         "email"
     ],
     "userpoolClientGenerateSecret": true,
-    "userpoolClientRefreshTokenValidity": 30,
+    "userpoolClientRefreshTokenValidity": "7",
     "userpoolClientWriteAttributes": [
+        "preferred_username",
         "email"
     ],
     "userpoolClientReadAttributes": [
-        "email"
+        "email",
+        "preferred_username"
     ],
     "userpoolClientLambdaRole": "amplif96d172ac_userpoolclient_lambda_role",
-    "userpoolClientSetAttributes": false,
+    "userpoolClientSetAttributes": true,
     "sharedId": "96d172ac",
     "resourceName": "amplifynotetaker96d172ac",
-    "authSelections": "identityPoolAndUserPool",
+    "authSelections": "userPoolOnly",
     "authRoleArn": {
         "Fn::GetAtt": [
             "AuthRole",
@@ -45,10 +45,18 @@
             "Arn"
         ]
     },
-    "useDefault": "default",
+    "useDefault": "manual",
     "usernameAttributes": [
         "email"
     ],
     "userPoolGroupList": [],
-    "dependsOn": []
+    "dependsOn": [],
+    "userPoolGroups": false,
+    "adminQueries": false,
+    "triggers": "{}",
+    "hostedUI": false,
+    "parentStack": {
+        "Ref": "AWS::StackId"
+    },
+    "permissions": []
 }
