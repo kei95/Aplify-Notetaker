@@ -158,4 +158,9 @@ function App() {
   );
 }
 
-export default withAuthenticator(App, { includeGreetings: true });
+export default withAuthenticator(App, {
+  includeGreetings: true,
+  signUpConfig: {
+    hiddenDefaults: ["phone_number", "email"],
+  },
+});

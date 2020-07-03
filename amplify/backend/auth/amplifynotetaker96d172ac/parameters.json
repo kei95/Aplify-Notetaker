@@ -4,15 +4,15 @@
     "autoVerifiedAttributes": [
         "email"
     ],
-    "mfaConfiguration": "OFF",
+    "mfaConfiguration": "OPTIONAL",
     "mfaTypes": [
-        "SMS Text Message"
+        "TOTP"
     ],
     "smsAuthenticationMessage": "Your authentication code is {####}",
     "smsVerificationMessage": "Your verification code is {####}",
     "emailVerificationSubject": "Your verification code",
     "emailVerificationMessage": "Your verification code is {####}",
-    "defaultPasswordPolicy": false,
+    "defaultPasswordPolicy": true,
     "passwordPolicyMinLength": 8,
     "passwordPolicyCharacters": [],
     "requiredAttributes": [
@@ -21,12 +21,11 @@
     "userpoolClientGenerateSecret": true,
     "userpoolClientRefreshTokenValidity": "7",
     "userpoolClientWriteAttributes": [
-        "preferred_username",
         "email"
     ],
     "userpoolClientReadAttributes": [
         "email",
-        "preferred_username"
+        "email_verified"
     ],
     "userpoolClientLambdaRole": "amplif96d172ac_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": true,
